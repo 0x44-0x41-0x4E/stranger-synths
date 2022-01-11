@@ -20,16 +20,15 @@ long distDuration;
 unsigned int distance = 5;
 unsigned int maxDistance = 720;
 
-/*
-uint8_t previousFrameDistance = 0;
-*/
 unsigned int previousNoteDistance = 0;
 unsigned int previousNoteFrequency = 80;
+
+// INPUT VARIABLES
+volatile bool buttonPressed = false;
 
 //Function prototypes
 void samplerISR();
 void buttISR();
-
 
 void setup() {
   
@@ -37,13 +36,13 @@ void setup() {
   pinMode(distTrigPin, OUTPUT);
   pinMode(distEchoPin, INPUT);
   pinMode(buttPin, INPUT);
-  pinMode(testPin, OUTPUT);
 
   // DAC SETUP
   DDRA = 0b11111111;
 
   Serial.begin(9600);
 
+  musicSettings_setup();
   waveGenerator_setup();
 
   // START AUDIO LOOP
@@ -54,15 +53,17 @@ void setup() {
   attachInterrupt(digitalPinToInterrupt(buttPin), buttISR, RISING);
 
   menuSystem_setup();
-  menuSystem_goToMenu("keySelection");
+  menuSystem_goToMenu("main");
 }
 
 void loop() {
 
-  //DEBUG PRINTS
-  //  -- Serial.println(digitalRead(buttPin));
-  
-  //DEBUG PRINTS END
+  if (buttonPressed) {
+    menuSystem_onButtonPress();
+    buttonPressed = false;
+  }
+
+  menuSystem_goDown();
   
   distance = getDistanceFromSensor();
 
@@ -73,7 +74,8 @@ void loop() {
     unsigned int distChange = distance - previousNoteDistance;
 
     if (distChange > 5 || distChange < -5) {
-      unsigned int frequency = musicSettings_getFrequency(distance, maxDistance);
+      unsigned short frequency = musicSettings_getFrequency(distance, maxDistance);
+      
       waveGenerator_generateWave(frequency, sampleDelayms);
       previousNoteFrequency = frequency;
       previousNoteDistance = distance;
@@ -120,14 +122,5 @@ void samplerISR() {
 }
 
 void buttISR(){
-  
-  //PLACEHOLDER CODE
-  if(digitalRead(testPin)){
-    digitalWrite(testPin, LOW);
-  }
-  else{
-    digitalWrite(testPin, HIGH);
-  }
-  //PLACEHOLDER END
-  
+  buttonPressed = true;
 }

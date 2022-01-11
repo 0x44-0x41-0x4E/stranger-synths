@@ -50,7 +50,7 @@ void waveGenerator_emptyWave() {
   waveSampleCount = 1250;
 }
 
-void waveGenerator_generateWave(int f, uint8_t _sampleDelayms) {
+void waveGenerator_generateWave(unsigned short f, uint8_t _sampleDelayms) {
     //Serial.println("Generating...");
 
     unsigned int T = 100000 / f;
@@ -74,4 +74,3 @@ void waveGenerator_generateWave(int f, uint8_t _sampleDelayms) {
       nothingGenerated = false;  
     }
 }
-
